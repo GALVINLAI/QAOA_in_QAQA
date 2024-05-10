@@ -98,6 +98,7 @@ def qaoa(G:Graph, shots:int=1000, n_layers:int=1, const=0, sample_method:str='ma
     # sample after optimization to find the most frequent bitstring    
     bit_strings = []
     samples = circuit2(params, n_layers=n_layers)
+    samples = np.array(samples)
     
     # samples is (n_samples, n_wires) ndarray
     for x in samples.T:

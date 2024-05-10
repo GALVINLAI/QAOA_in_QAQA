@@ -82,6 +82,6 @@ if __name__ == '__main__':
     value, sols = qaoa_square(data_path=data_path, depth=1, sub_size=10)
     result['value'] = value
     result['sol'] = sols
-    with open('result/test_result.json','w') as fp:
-        json.dump(result,fp)
+    # with open('result/test_result.json','w') as fp:
+    #     json.dump(result,fp)
 
