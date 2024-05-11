@@ -73,15 +73,12 @@ def qaoa_square(data_path:str, depth:int=1, sub_size:int=10):
 
     return ret[0].item(), sols
 
-
-
-
 if __name__ == '__main__':
     result = {}
     data_path = 'data/test.json'
     value, sols = qaoa_square(data_path=data_path, depth=1, sub_size=10)
     result['value'] = value
     result['sol'] = sols
-    # with open('result/test_result.json','w') as fp:
-    #     json.dump(result,fp)
+    with open('result/test_result.json','w') as fp:
+        json.dump(result,fp)
 

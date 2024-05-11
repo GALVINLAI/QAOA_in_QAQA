@@ -1,32 +1,44 @@
-from pennylane import numpy as np
-import pennylane as qml
+from pennylane import numpy as np 
+# 使用Pennylane的特殊numpy版本，它对量子计算进行了优化。
+
+import pennylane as qml 
+# 一个量子计算库，用于构建和优化量子电路。
+
 import math
+
 from tqdm import tqdm
+# 进度条库，用于显示循环的进度。
+
 from utilities import *
+
 import collections
+#  一个Python标准库，用于处理各种容器数据类型
 
 def qaoa(G:Graph, shots:int=1000, n_layers:int=1, const=0, sample_method:str='max'):
     '''
     standard qaoa for max cut
     --------------------------
-    G : Graph 
+    G : Graph 图对象
 
-    shots : number of circuit shots
+    shots : number of circuit shots 电路运行次数
 
     n_layers : number of QAOA layers
 
-    const : constant in max cut objective function
+    const : constant in max cut objective function 最大切割目标函数中的常数项
 
-    sample_method : 'max' return the bitstring with largest cut value
-
+    sample_method : 'max' return the bitstring with largest cut value ??
 
     Return cut value and solution
     '''
-    n_wires = G.n_v
-    edges = G.e
-    # subgraph with no edges, any partition is optimal
+
+    n_wires = G.n_v # 量子比特数等于顶点数
+    edges = G.e # 图的边
+
+    # subgraph with no edges, any partition is optimal   
+    # 如果没有边，任何分割都是最优的
+    # 检查是否有边，无边则返回一个全0的字符串。
     if edges == []:
-        return const ,format(0,"0{}b".format(n_wires))[::-1]
+        return const, format(0,"0{}b".format(n_wires))[::-1]
 
     # during optimization phase we use default number of shots
     # dev is for optimization phase
@@ -40,7 +52,7 @@ def qaoa(G:Graph, shots:int=1000, n_layers:int=1, const=0, sample_method:str='ma
         obs.append( qml.PauliZ(edge[0]) @ qml.PauliZ(edge[1]) )
     H_C = qml.Hamiltonian(coeffs, obs)
 
-    # mixer Hamiltonian
+    # mixer Hamiltonian 对每个顶点应用PauliX门
     coeffs = []
     obs = []
     for i in range(n_wires):
@@ -48,6 +60,7 @@ def qaoa(G:Graph, shots:int=1000, n_layers:int=1, const=0, sample_method:str='ma
         obs.append(qml.PauliX(i))
     H_B = qml.Hamiltonian(coeffs, obs)
 
+    # 定义一个QAOA层，其中包括成本和混合哈密顿量的演化。
     def qaoa_layer(gamma,beta):
         qml.templates.subroutines.ApproxTimeEvolution(H_C,gamma,1)
         qml.templates.subroutines.ApproxTimeEvolution(H_B,beta,1)
@@ -56,6 +69,7 @@ def qaoa(G:Graph, shots:int=1000, n_layers:int=1, const=0, sample_method:str='ma
 
         @qml.qnode(dev)
         def circuit(params):
+
             # apply Hadamards to get the n qubit |+> state
             for wire in range(n_wires):
                 qml.Hadamard(wire)
@@ -99,7 +113,7 @@ def qaoa(G:Graph, shots:int=1000, n_layers:int=1, const=0, sample_method:str='ma
     bit_strings = []
     samples = circuit2(params, n_layers=n_layers)
     samples = np.array(samples)
-    
+
     # samples is (n_samples, n_wires) ndarray
     for x in samples.T:
         bitlist = [str(int((i + 1)/2)) for i in x]
